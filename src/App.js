@@ -1,24 +1,84 @@
-import logo from './logo.svg';
-import './App.css';
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import Layout from "./components/layout";
+import Home from "./routes/home";
+import Profile from "./routes/profile.tsx";
+import Login from "./routes/login.tsx";
+import CreateAccount from "./routes/create-account.tsx";
+import { createGlobalStyle } from "styled-components";
+import reset from "styled-reset";
+import { useEffect, useState } from "react";
+import LoadingScreen from "./components/loading-screen";
+import auth from "./firebase.js";
+import styled from "styled-components";
+import ProtectedRoute from "./components/protected-route.tsx";
+
+
+const router = createBrowserRouter([
+  {
+    path:"/",
+    element: (
+      <ProtectedRoute>
+        <Layout/>
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        path: "",
+        element: <Home/>,
+      },
+      {
+        path: "profile",
+        element: <Profile/>
+      },
+    ],
+  },
+  {
+    path: "/login",
+    element: <Login/>
+  },
+  {
+    path: "/create-account",
+    element: <CreateAccount/>
+  }
+])
+
+const GlobalStyles = createGlobalStyle`
+${reset};
+* {
+  box-sizing: border-box;
+}
+body {
+  background-color: black;
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
+
+}
+`;
+
+const Wrapper = styled.div`
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+`
 
 function App() {
+
+  const  [isLoading, setLoading] = useState(true);
+  const init = async() => {
+    await auth.authStateReady(); // 인증상태가 되었는지 기다림 -> 최초 인증 상태사 완료될때 실행되는 Promise를 return함 = 파이어베이스가 쿠키와 토큰을 읽고 백엔드와 소통해서 로그인 여부를 확인하는 동안 기다리겠다
+    setLoading(false)
+  };
+
+  useEffect(() => {
+    init();
+  },[])
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Wrapper>
+    <GlobalStyles/>
+    {
+      isLoading ? <LoadingScreen/> : <RouterProvider router={router} />
+    }
+    </Wrapper>
   );
 }
 
