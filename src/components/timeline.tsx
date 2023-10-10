@@ -71,6 +71,3 @@ function Timeline() {
 }
 
 export default Timeline
-
-
-//강의 fetching 6:10초부터 들으면 됨
